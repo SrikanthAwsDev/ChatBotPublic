@@ -8,7 +8,7 @@ from transformers import pipeline
 
 # UI Setup
 st.set_page_config(page_title="Qdrant PDF Chatbot", layout="wide")
-st.title("📄 Chat with your PDF (Qdrant Cloud + HF)")
+st.title("📄 Welcome to GDP Handbook Chatbot. Ask away!!)")
 
 # Qdrant Cloud Config
 QDRANT_API_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3MiOiJtIn0.e3jaGBypE5dqsvrdU8LREwePXV0HcKRHACd2BV55764"
