@@ -23,7 +23,7 @@ if uploaded_file is not None:
 
     # Step 3: Embed with HuggingFace
     embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
-    vectorstore = Weaviate.from_documents(docs, embedding=embeddings)
+    vectorstore = Weaviate.from_documents(docs, embedding=embeddings, client=weaviate_client)
 
     # Step 4: Hugging Face QA Pipeline
     qa_model = pipeline("question-answering", model="deepset/roberta-base-squad2", device=0 if torch.cuda.is_available() else -1)
