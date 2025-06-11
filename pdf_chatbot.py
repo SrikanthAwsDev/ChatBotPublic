@@ -1,7 +1,7 @@
 import streamlit as st
 from langchain_community.document_loaders import PyMuPDFLoader
 from langchain.text_splitter import CharacterTextSplitter
-from langchain_community.vectorstores import Weaviate
+from langchain_community.vectorstores import Qdrant
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from transformers import pipeline
 import torch
@@ -23,7 +23,7 @@ if uploaded_file is not None:
 
     # Step 3: Embed with HuggingFace
     embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
-    vectorstore = Weaviate.from_documents(docs, embedding=embeddings, client=weaviate_client)
+    vectorstore = Qdrant.from_documents(docs, embedding=embeddings, url="http://localhost:6333", collection_name="my_docs")
 
     # Step 4: Hugging Face QA Pipeline
     qa_model = pipeline("question-answering", model="deepset/roberta-base-squad2", device=0 if torch.cuda.is_available() else -1)
