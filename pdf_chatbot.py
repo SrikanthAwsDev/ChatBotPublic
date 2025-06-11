@@ -5,7 +5,6 @@ from langchain_community.vectorstores import Weaviate
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from transformers import pipeline
 import torch
-import sqlite3
 
 st.set_page_config(page_title="PDF Chatbot (HF)", layout="wide")
 st.title("📄🤗 Chat with your PDF using Hugging Face")
