@@ -2,5 +2,5 @@ langchain_community==0.3.25
 transformers==4.52.4
 torch==2.7.1
 PyMuPDF==1.26.0
-sentence-transformers==4.1.0
-faiss-gpu==1.7.2
+sentence_transformers==4.1.0
+faiss_gpu==1.7.2
