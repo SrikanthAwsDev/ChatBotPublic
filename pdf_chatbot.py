@@ -1,45 +1,56 @@
 import streamlit as st
 from langchain_community.document_loaders import PyMuPDFLoader
 from langchain.text_splitter import CharacterTextSplitter
-from langchain_community.vectorstores import Qdrant
 from langchain_community.embeddings import HuggingFaceEmbeddings
+from langchain.vectorstores import Qdrant
+from qdrant_client import QdrantClient
 from transformers import pipeline
-import torch
 
-st.set_page_config(page_title="PDF Chatbot (HF)", layout="wide")
-st.title("📄🤗 Chat with your PDF using Hugging Face")
+# UI Setup
+st.set_page_config(page_title="Qdrant PDF Chatbot", layout="wide")
+st.title("📄 Chat with your PDF (Qdrant Cloud + HF)")
 
-# Step 1: Upload PDF
-uploaded_file = st.file_uploader("Upload your PDF", type=["pdf"])
-if uploaded_file is not None:
+# Qdrant Cloud Config
+QDRANT_API_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3MiOiJtIn0.e3jaGBypE5dqsvrdU8LREwePXV0HcKRHACd2BV55764"
+QDRANT_URL = "https://your-cluster-url.qdrant.io"
+COLLECTION_NAME = "pdf_chunks"
+
+# Setup Embedding Model & Client
+embedding_model = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
+qdrant_client = QdrantClient(url=QDRANT_URL, api_key=QDRANT_API_KEY)
+
+# Upload and Process PDF
+uploaded_file = st.file_uploader("Upload PDF", type=["pdf"])
+if uploaded_file:
     with open("uploaded.pdf", "wb") as f:
         f.write(uploaded_file.read())
 
-    # Step 2: Load & Split
     loader = PyMuPDFLoader("uploaded.pdf")
     documents = loader.load()
-    text_splitter = CharacterTextSplitter(chunk_size=500, chunk_overlap=50)
-    docs = text_splitter.split_documents(documents)
 
-    # Step 3: Embed with HuggingFace
-    embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
-    vectorstore = Qdrant.from_documents(docs, embedding=embeddings, url="http://localhost:6333", collection_name="my_docs")
+    splitter = CharacterTextSplitter(chunk_size=500, chunk_overlap=50)
+    docs = splitter.split_documents(documents)
 
-    # Step 4: Hugging Face QA Pipeline
-    qa_model = pipeline("question-answering", model="deepset/roberta-base-squad2", device=0 if torch.cuda.is_available() else -1)
+    # Build or connect vectorstore
+    vectorstore = Qdrant.from_documents(
+        docs,
+        embedding=embedding_model,
+        url=QDRANT_URL,
+        api_key=QDRANT_API_KEY,
+        collection_name=COLLECTION_NAME
+    )
 
-    # Step 5: User Query Input
-    user_input = st.text_input("Ask something about the Ingestion Models 👇")
+    # QA Model
+    qa_pipeline = pipeline("question-answering", model="deepset/roberta-base-squad2")
+
+    # Query
+    user_input = st.text_input("Ask a question:")
     if user_input:
-        # Step 6: Retrieve Relevant Context
-        docs_and_scores = vectorstore.similarity_search_with_score(user_input, k=3)
-        context = "\n".join([doc.page_content for doc, score in docs_and_scores])
+        matched_docs = vectorstore.similarity_search(user_input, k=3)
+        context = "\n".join([doc.page_content for doc in matched_docs])
+        answer = qa_pipeline(question=user_input, context=context)
+        st.write("💡", answer["answer"])
 
-        # Step 7: Ask the QA model
-        with st.spinner("🤔 Thinking..."):
-            result = qa_model(question=user_input, context=context)
-            st.write("💡", result["answer"])
-
-    st.info("Example questions: \n- What is IAM Role Anywhere?\n- What details needed for SFTP?")
+    st.info("Ask: 'What are ingestion models?', 'How to set up IAM Role Anywhere?', etc.")
 else:
-    st.warning("Please upload a PDF file to begin.")
+    st.warning("Upload a PDF to get started.")
