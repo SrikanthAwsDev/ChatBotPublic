@@ -9,9 +9,9 @@ import uvicorn
 app = FastAPI()
 
 # Qdrant Config
-QDRANT_API_KEY = "your_api_key"
-QDRANT_URL = "your_qdrant_url"
-COLLECTION_NAME = "pdf_chunks"
+QDRANT_API_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3MiOiJtIn0.X-iuZOhPdH6BoPpwhKJlqjxYaNIzrPkRyhRFyA20BtM"
+QDRANT_URL = "https://b2e451a6-90ae-4db2-a715-4894c90663c0.us-east4-0.gcp.cloud.qdrant.io"
+COLLECTION_NAME = "streamlitCluster"
 
 embedding_model = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
 qa_pipeline = pipeline("question-answering", model="deepset/roberta-base-squad2")
